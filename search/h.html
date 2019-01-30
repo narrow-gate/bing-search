@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>bing search</title>
+	<meta  http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type="text/css">
+	body{
+		background-color: #333;
+	}
+	.bg-div{
+		background-image: url('river.jpg');
+		width: 1280px;
+		height: 690px;
+		margin: 0 auto;
+		position: relative;
+	}
+	.logo{
+		margin: -4px 15px 0 0;
+		background-image: url('logo.png');
+		width: 107px;
+		height: 53px;
+		float:left;
+	}
+	.search-input-text{
+		border: 0;
+		height: 25px;line-height: 25px;
+		float:left;
+			width: 350px;
+		outline: none;
+	}
+	.search-input-button{
+		border: 0;
+		background-image: url('search-button.png');
+        height: 29px;
+		width: 29px;
+        float:left;
+	}
+	form{ float:left; 
+		background-color: #fff;
+     padding: 5px;
+	}
+.search-box{
+position: absolute;top: 200px;left: 300px;
+}
+.suggest{
+	width: 388px;
+	background-color: #fff;
+	position: absolute;
+margin: 0;padding: 0;
+	border: 1px solid #999;
+	}
+	.suggest ul{
+		list-style: none;
+		margin: 0;padding: 0;
+	}
+	.suggest ul li{padding: 3px;font-size: 14px;line-height: 25px;
+cursor: pointer;}
+.suggest ul li:hover{text-decoration: underline;background-color: #e5e5e5;}
+	</style>
+}
+}
+<body>
+<div class="bg-div">
+	<div class="search-box">
+		<div class="logo"></div>	
+	<form class="search-form" id="search-form" action="https://cn.bing.com/search" target="_blank">
+		<input type="text" class="search-input-text" name="q" id="search_input" autocomplete="off">
+		<input type="submit" class="search-input-button" value="">
+	</form>
+</div>
+</div>
+<div class="suggest" id="search-suggest" style="display: none"> 
+	<ul id="search-result">
+		<li>搜索结果1</li>
+		<li>搜索结果2</li>
+	</ul></div>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+/*这是用jquery实现的	
+$('#search_input').bind('keyup',function(){
+		var searchText=$('#search_input').val();
+		$.get('http://api.bing.com/qsonhs.aspx?q='+searchText,function(d){
+			var d=d.AS.Results[0].Suggest;
+			var html='';
+             for (var i =0;i<d.length; i++) {
+           html+='<li>'+d[i].Txt+'</li>';
+             };
+             $('#search-result').html(html);
+      $('#search-suggest').css({
+			top:$('#search-form').offset().top+$('#search-form').height()+10,
+			left:$('#search-form').offset().left,
+			position:'absolute'				
+	}).show();       
+		},'json');
+	});
+	$(document).bind('click',function(){
+		$('#search-suggest').hide();
+	})	第一次用老师的方法不行了，用jsonp的方法试试 */
+	$("#search_input").on('keyup',function(envent){
+		var searchText=$('#search_input').val();
+		$.ajax({
+			type:'get',
+			async:true,
+			dataType:'jsonp',
+			jsonp:'cb',
+			url:'http://api.bing.com/qsonhs.aspx?type=cb&q='+searchText,
+			success:function(data){
+				var data=data.AS.Results[0].Suggests;
+				var html='';
+				for (var i = 0; i <data.length; i++) {
+					html+='<li>'+data[i].Txt+'</li>';
+					}
+					$("#search-result").html(html);
+					//调试出txt字段 console.log(data);  
+					$("#search-suggest").show().css({
+						top:$('#search-form').offset().top+$('#search-form').height()+10,
+			left:$('#search-form').offset().left,
+			position:'absolute'	
+					})
+				},
+				});
+                 event.stopPropagation();
+			});
+	$(document).on('click',function(){
+		$("#search-suggest").hide();
+	});
+</script>
+</body>
+</html>

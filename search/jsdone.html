@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>bing search</title>
+	<meta  http-equiv="X-UA-Compatible" content="IE=edge">
+	<style type="text/css">
+	body{
+		background-color: #333;
+	}
+	.bg-div{
+		background-image: url('river.jpg');
+		width: 1280px;
+		height: 690px;
+		margin: 0 auto;
+		position: relative;
+	}
+	.logo{
+		margin: -4px 15px 0 0;
+		background-image: url('logo.png');
+		width: 107px;
+		height: 53px;
+		float:left;
+	}
+	.search-input-text{
+		border: 0;
+		height: 25px;
+		line-height: 25px;
+		float:left;
+			width: 350px;
+		outline: none;
+	}
+	.search-input-button{
+		border: 0;
+		background-image: url('search-button.png');
+        height: 29px;
+		width: 29px;
+        float:left;
+	}
+	form{ 
+		float:left; 
+		background-color: #fff;
+        padding: 5px;
+	}
+.search-box{
+position: absolute;top: 200px;left: 300px;
+}
+.suggest{
+	width: 388px;
+	background-color: #fff;
+	position: absolute;
+margin: 0;padding: 0;
+	border: 1px solid #999;
+	}
+	.suggest ul{
+		list-style: none;
+		margin: 0;padding: 0;
+	}
+	.suggest ul li{padding: 3px;font-size: 14px;line-height: 25px;
+cursor: pointer;}
+.suggest ul li:hover{text-decoration: underline;background-color: #e5e5e5;}
+	</style>
+}
+}
+<body>
+<div class="bg-div">
+	<div class="search-box">
+		<div class="logo"></div>	
+	<form class="search-form" id="search-form" action="https://cn.bing.com/search" target="_blank">
+		<input type="text" class="search-input-text" name="q" id="search_input" autocomplete="off">
+		<input type="submit" class="search-input-button" value="">
+	</form>
+</div>
+</div>
+<div class="suggest" id="search-suggest" style="display: none"> 
+	<ul id="search-result">
+		<li>搜索结果1</li>
+		<li>搜索结果2</li>
+	</ul></div>
+
+<script type="text/javascript">
+//用js实现，并在windows下用fiddle实现跨域
+	var getDOM=function(id){
+		return document.getElementById(id);
+	}
+	var addEvent=function(id,event,fn){
+		var el=getDOM(id)||document;
+		if(el.addEventListener)//addeventlistener适用于非ie浏览器
+			{el.addEventListener(event,fn,false)}
+		else if(el.attachEvent){
+			el.attachEvent('on'+event,fn);//attachevent适用于ie浏览器
+		}
+	}
+	var getElementLeft=function(element){
+		var actualLeft=element.offsetLeft;
+		var current=element.offsetParent;
+		while (current!==null) {
+		actualLeft+=current.offsetLeft;
+		current=current.offsetParent;
+		}
+		return actualLeft;
+	}
+	var getElementTop=function(element){
+		var actualTop=element.offsetTop;
+		var current=element.offsetParent;
+		while (current!==null) {
+			actualTop+=current.offsetTop;
+			current=current.offsetParent;
+		}
+		return actualTop;
+	}
+	var ajaxGet=function(url,callback){
+		var _xhr=null;
+		if(window.XMLHttpRequest){//非ie浏览器使用
+			_xhr=new window.XMLHttpRequest();
+		}
+		else if (window.ActiveXObject) {
+			_xhr=new ActiveXObject("Msxml2.XMLHTTP");
+		}
+		_xhr.onreadystatechange=function(){
+			if(_xhr.readyState==4 && _xhr.status==200){
+				callback(JSON.parse(_xhr.responseText));
+			}
+		}
+		_xhr.open('get',url,false);//要使用ajax技术，第三个参数必须设置为false
+		_xhr.send(null);
+	}
+	/*addEvent('search_input','keyup',function(){
+     getDOM('search-suggest').style.top=getElementTop(getDOM('search-form'))+38+'px';
+     getDOM('search-suggest').style.left=getElementLeft(getDOM('search-form'))+'px';
+     getDOM('search-suggest').style.position = 'absolute';
+     getDOM('search-suggest').style.display = 'block';
+	});根据ajax技术改变addevent*/
+	var delegateEvent=function(target,event,fn){
+		addEvent(document,event,function(e){
+			if(e.target.nodeName==target.toUpperCase()){
+				fn.call(e.target);
+			}//target 事件属性可返回事件的目标节点
+		})
+	}
+	addEvent('search_input','keyup',function(){
+		var searchText=getDOM('search_input').value;
+		ajaxGet('https://api.bing.com/qsonhs.aspx?type=cb&q='+searchText,function(d){
+			var d=d.AS.Results[0].Suggests;
+			var html='';
+			for(var i=0;i<d.length;i++){
+				html+='<li>'+d[i].Txt+'</li>';//txt字段也是服务器给出
+			}
+			getDOM('search-result').innerHTML=html;
+			getDOM('search-suggest').style.top=getElementTop(getDOM('search-form'))+38+'px';
+			getDOM('search-suggest').style.lef=getElementLeft(getDOM('search-form'))+'px';
+			getDOM('search-suggest').style.position='absolute';
+			getDOM('search-suggest').style.display='block';
+		});
+	});
+	delegateEvent('li','click',function(){
+		var keyword=this.innerHTML;
+		location.href='https://cn.bing.com/search?q='+keyword;//用fiddler实现了跨域
+	})
+	</script>
+</body>
+</html>
